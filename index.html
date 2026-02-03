@@ -135,34 +135,54 @@
     const username = "Aryan-747";
     const repoGrid = document.getElementById("repoGrid");
 
+    repoGrid.innerHTML = "<p>Loading repositories...</p>";
+
     fetch(`https://api.github.com/users/${username}/repos?per_page=100`)
-        .then(response => response.json())
-        .then(repos => {
-            repos.sort((a, b) => b.stargazers_count - a.stargazers_count);
-
-            repos.forEach(repo => {
-                const card = document.createElement("div");
-                card.className = "repo-card";
-
-                card.innerHTML = `
-                    <h3>
-                        <a href="${repo.html_url}" target="_blank">
-                            ${repo.name}
-                        </a>
-                    </h3>
-                    <p>${repo.description || "No description provided."}</p>
-                    <div class="repo-meta">
-                        <span>🛠 ${repo.language || "N/A"}</span>
-                        <span>⭐ ${repo.stargazers_count} | 🍴 ${repo.forks_count}</span>
-                    </div>
-                `;
-
-                repoGrid.appendChild(card);
-            });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("GitHub API limit reached");
+            }
+            return response.json();
         })
-        .catch(err => {
-            repoGrid.innerHTML = "<p>Failed to load repositories.</p>";
-            console.error(err);
+        .then(repos => {
+            repoGrid.innerHTML = "";
+
+            repos
+                .sort((a, b) => b.stargazers_count - a.stargazers_count)
+                .forEach(repo => {
+                    const card = document.createElement("div");
+                    card.className = "repo-card";
+
+                    card.innerHTML = `
+                        <h3>
+                            <a href="${repo.html_url}" target="_blank">
+                                ${repo.name}
+                            </a>
+                        </h3>
+                        <p>${repo.description || "No description provided."}</p>
+                        <div class="repo-meta">
+                            <span>🛠 ${repo.language || "N/A"}</span>
+                            <span>⭐ ${repo.stargazers_count} | 🍴 ${repo.forks_count}</span>
+                        </div>
+                    `;
+
+                    repoGrid.appendChild(card);
+                });
+        })
+        .catch(error => {
+            repoGrid.innerHTML = `
+                <div style="color:#ff7b72;">
+                    <h3>⚠ Unable to load repositories</h3>
+                    <p>GitHub API rate limit reached.</p>
+                    <p>
+                        <a href="https://github.com/${username}" target="_blank"
+                           style="color:#58a6ff;">
+                           View repositories on GitHub →
+                        </a>
+                    </p>
+                </div>
+            `;
+            console.error(error);
         });
 </script>
 
