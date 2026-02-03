@@ -6,59 +6,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --muted: #8b949e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f4f6f8;
             margin: 0;
-            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
         }
 
         header {
-            background-color: #24292e;
-            color: white;
-            padding: 20px;
+            padding: 40px 20px;
             text-align: center;
+            border-bottom: 1px solid #30363d;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            color: var(--muted);
         }
 
         header a {
-            color: #58a6ff;
+            color: var(--accent);
             text-decoration: none;
+            font-weight: 500;
         }
 
         .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 0 15px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        .repo {
-            background: white;
-            border-radius: 8px;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
-        .repo h3 {
+        .repo-card {
+            background-color: var(--card);
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 18px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .repo-card h3 {
             margin: 0 0 8px;
+            font-size: 1.2rem;
         }
 
-        .repo a {
+        .repo-card a {
+            color: var(--accent);
             text-decoration: none;
-            color: #0969da;
         }
 
-        .repo p {
-            margin: 0;
-            color: #555;
+        .repo-card p {
             font-size: 14px;
+            color: var(--muted);
+            min-height: 40px;
+        }
+
+        .repo-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-top: 15px;
+            color: var(--muted);
         }
 
         footer {
             text-align: center;
-            padding: 15px;
-            color: #777;
+            padding: 20px;
+            border-top: 1px solid #30363d;
+            color: var(--muted);
             font-size: 14px;
+        }
+
+        @media (max-width: 500px) {
+            header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -66,41 +115,56 @@
 
 <header>
     <h1>Aryan Salaria</h1>
-    <p>My GitHub Repositories</p>
+    <p>Full Stack Web Developer · GitHub Projects</p>
     <a href="https://github.com/Aryan-747" target="_blank">
-        Visit My GitHub Profile
+        github.com/Aryan-747
     </a>
 </header>
 
 <div class="container">
-
-    <!-- Add repositories here -->
-    <div class="repo">
-        <h3><a href="https://github.com/Aryan-747/Yumzy" target="_blank">Yumzy</a></h3>
-        <p>Food ordering website built using PHP</p>
+    <div class="grid" id="repoGrid">
+        <!-- Repositories will load here -->
     </div>
-
-    <div class="repo">
-        <h3><a href="https://github.com/Aryan-747/Quiz-Application-Laravel" target="_blank">
-            Quiz Application (Laravel)
-        </a></h3>
-        <p>Quiz-based application developed using Laravel PHP</p>
-    </div>
-
-    <div class="repo">
-        <h3><a href="https://github.com/Aryan-747/Smart-Wardrobe-System" target="_blank">
-            Smart Wardrobe System
-        </a></h3>
-        <p>Patent-oriented project for automatic outfit management</p>
-    </div>
-
-    <!-- Keep adding more repos the same way -->
-
 </div>
 
 <footer>
-    © 2026 Aryan Salaria | Full Stack Web Developer
+    © 2026 Aryan Salaria · Built with GitHub API
 </footer>
+
+<script>
+    const username = "Aryan-747";
+    const repoGrid = document.getElementById("repoGrid");
+
+    fetch(`https://api.github.com/users/${username}/repos?per_page=100`)
+        .then(response => response.json())
+        .then(repos => {
+            repos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+
+            repos.forEach(repo => {
+                const card = document.createElement("div");
+                card.className = "repo-card";
+
+                card.innerHTML = `
+                    <h3>
+                        <a href="${repo.html_url}" target="_blank">
+                            ${repo.name}
+                        </a>
+                    </h3>
+                    <p>${repo.description || "No description provided."}</p>
+                    <div class="repo-meta">
+                        <span>🛠 ${repo.language || "N/A"}</span>
+                        <span>⭐ ${repo.stargazers_count} | 🍴 ${repo.forks_count}</span>
+                    </div>
+                `;
+
+                repoGrid.appendChild(card);
+            });
+        })
+        .catch(err => {
+            repoGrid.innerHTML = "<p>Failed to load repositories.</p>";
+            console.error(err);
+        });
+</script>
 
 </body>
 </html>
